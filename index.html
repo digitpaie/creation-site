@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Créer ton premier site web — Cours interactif</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="accueil">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>🌐 Créer ton premier site web</h1>
+    <p>Un cours interactif en français pour apprendre HTML et JavaScript,
+       étape par étape — même si tu n'as jamais codé !</p>
+    <a href="lecon.html?id=1" id="btn-commencer" class="btn-principal">
+      Commencer le cours →
+    </a>
+  </div>
+
+  <!-- Progression globale -->
+  <div class="progression-globale">
+    <div class="prog-header">
+      <span>Ta progression</span>
+      <span class="prog-pct" id="texte-progression">0 / 10 leçons</span>
+    </div>
+    <div class="barre-progression">
+      <div class="barre-remplie" id="barre" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <!-- Liste des modules -->
+  <div class="modules" id="modules-container"></div>
+
+  <script src="js/lecons.js"></script>
+  <script>
+    const STORAGE_KEY = 'cours_progression';
+
+    function getProgression() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+      catch (_) { return {}; }
+    }
+
+    const prog  = getProgression();
+    const total = LECONS.length;
+    const nbOk  = Object.values(prog).filter(Boolean).length;
+    const pct   = Math.round((nbOk / total) * 100);
+
+    // Barre de progression
+    document.getElementById('texte-progression').textContent = `${nbOk} / ${total} leçons`;
+    document.getElementById('barre').style.width = pct + '%';
+
+    // Bouton : reprendre là où on s'est arrêté
+    const prochaine = LECONS.find(l => !prog[l.id]) || LECONS[0];
+    const btnCommencer = document.getElementById('btn-commencer');
+    btnCommencer.href = `lecon.html?id=${prochaine.id}`;
+    if (nbOk > 0) btnCommencer.textContent = 'Continuer le cours →';
+    if (nbOk === total) btnCommencer.textContent = 'Revoir le cours 🏆';
+
+    // Grouper les leçons par module
+    const modules = {};
+    LECONS.forEach(l => {
+      if (!modules[l.moduleNom]) modules[l.moduleNom] = [];
+      modules[l.moduleNom].push(l);
+    });
+
+    // Rendre les cartes de modules
+    let html = '';
+    Object.entries(modules).forEach(([moduleNom, lecons]) => {
+      const nbDone = lecons.filter(l => prog[l.id]).length;
+      html += `
+        <div class="module-card">
+          <div class="module-header">
+            <h2>${moduleNom}</h2>
+            <span class="module-stats">${nbDone} / ${lecons.length} terminées</span>
+          </div>
+          <ul class="lecon-liste">`;
+
+      lecons.forEach(l => {
+        const done = prog[l.id];
+        html += `
+            <li>
+              <a href="lecon.html?id=${l.id}" class="lecon-item ${done ? 'complete' : ''}">
+                <div class="lecon-num">${done ? '✓' : l.id}</div>
+                <span class="lecon-nom">${l.titre}</span>
+                ${done ? '<span class="badge-ok">✅</span>' : ''}
+              </a>
+            </li>`;
+      });
+
+      html += `
+          </ul>
+        </div>`;
+    });
+
+    document.getElementById('modules-container').innerHTML = html;
+  </script>
+</body>
+</html>
