@@ -1547,7 +1547,7 @@ services:
     environment:
       POSTGRES_DB: mydb
       POSTGRES_USER: user
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U user -d mydb"]
       interval: 10s
